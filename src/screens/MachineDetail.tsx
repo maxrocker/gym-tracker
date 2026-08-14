@@ -10,11 +10,13 @@ import MachinePhoto from '../components/MachinePhoto'
 import EntryEditor, { summarizeSets } from '../components/EntryEditor'
 import { useToast } from '../components/Toast'
 
-type RangeKey = '1M' | '3M' | '6M' | 'ALL'
+type RangeKey = '1M' | '3M' | '6M' | '1Y' | '2Y' | 'ALL'
 const RANGES: { key: RangeKey; label: string; days: number | null }[] = [
   { key: '1M', label: '1M', days: 30 },
   { key: '3M', label: '3M', days: 90 },
   { key: '6M', label: '6M', days: 180 },
+  { key: '1Y', label: '1Y', days: 365 },
+  { key: '2Y', label: '2Y', days: 730 },
   { key: 'ALL', label: 'All', days: null },
 ]
 
@@ -113,10 +115,10 @@ export default function MachineDetail({ machine, onBack, onEdit, onDeleted }: Pr
         ) : (
           <div style={{ height: 220 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+              <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="label" tick={{ fontSize: 11 }} minTickGap={24} />
-                <YAxis tick={{ fontSize: 11 }} width={40} domain={['auto', 'auto']} />
+                <YAxis tick={{ fontSize: 11 }} width={44} domain={['auto', 'auto']} />
                 <Tooltip
                   formatter={(v: any, _n: any, ctx: any) => [`${v} ${machine.unit === 'freetext' ? '' : machine.unit}${ctx?.payload?.effort ? ' ' + ctx.payload.effort : ''}`, 'Max set']}
                   labelFormatter={(_l, payload) => payload?.[0]?.payload ? formatDMY(payload[0].payload.date) : ''}
