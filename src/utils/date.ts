@@ -52,3 +52,18 @@ export function startOfWeek(iso: string): string {
   d.setDate(d.getDate() - day)
   return dateToISO(d)
 }
+
+// Points in a chronologically-sorted series where the calendar year advances, keyed by each
+// point's chart label — used to draw "new year" reference lines on x-axes.
+export function yearBoundaries<T extends { date: string; label: string }>(
+  data: T[],
+): { label: string; year: string }[] {
+  const marks: { label: string; year: string }[] = []
+  let lastYear: string | null = null
+  for (const d of data) {
+    const year = d.date.slice(0, 4)
+    if (lastYear !== null && year !== lastYear) marks.push({ label: d.label, year })
+    lastYear = year
+  }
+  return marks
+}

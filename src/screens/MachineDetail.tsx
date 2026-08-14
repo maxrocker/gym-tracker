@@ -1,24 +1,15 @@
 import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer,
 } from 'recharts'
 import { db, getEntriesForMachine } from '../db'
 import type { Machine, WorkoutEntry } from '../types'
-import { addDays, formatDMY, formatShort, todayISO } from '../utils/date'
+import { addDays, formatDMY, formatShort, todayISO, yearBoundaries } from '../utils/date'
+import { RANGES, type RangeKey } from '../utils/ranges'
 import MachinePhoto from '../components/MachinePhoto'
 import EntryEditor, { summarizeSets } from '../components/EntryEditor'
 import { useToast } from '../components/Toast'
-
-type RangeKey = '1M' | '3M' | '6M' | '1Y' | '2Y' | 'ALL'
-const RANGES: { key: RangeKey; label: string; days: number | null }[] = [
-  { key: '1M', label: '1M', days: 30 },
-  { key: '3M', label: '3M', days: 90 },
-  { key: '6M', label: '6M', days: 180 },
-  { key: '1Y', label: '1Y', days: 365 },
-  { key: '2Y', label: '2Y', days: 730 },
-  { key: 'ALL', label: 'All', days: null },
-]
 
 interface Props {
   machine: Machine
@@ -50,6 +41,8 @@ export default function MachineDetail({ machine, onBack, onEdit, onDeleted }: Pr
       }
     }).filter(d => d.value != null)
   }, [inRange])
+
+  const yearMarks = useMemo(() => yearBoundaries(chartData), [chartData])
 
   async function archive() {
     await db.machines.update(machine.id!, { archived: true })
@@ -113,9 +106,9 @@ export default function MachineDetail({ machine, onBack, onEdit, onDeleted }: Pr
         {chartData.length < 2 ? (
           <div className="empty-state">Not enough data in this range yet.</div>
         ) : (
-          <div style={{ height: 220 }}>
+          <div style={{ height: 238 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 18 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="label" tick={{ fontSize: 11 }} minTickGap={24} />
                 <YAxis tick={{ fontSize: 11 }} width={44} domain={['auto', 'auto']} />
@@ -123,6 +116,15 @@ export default function MachineDetail({ machine, onBack, onEdit, onDeleted }: Pr
                   formatter={(v: any, _n: any, ctx: any) => [`${v} ${machine.unit === 'freetext' ? '' : machine.unit}${ctx?.payload?.effort ? ' ' + ctx.payload.effort : ''}`, 'Max set']}
                   labelFormatter={(_l, payload) => payload?.[0]?.payload ? formatDMY(payload[0].payload.date) : ''}
                 />
+                {yearMarks.map(mark => (
+                  <ReferenceLine
+                    key={mark.label}
+                    x={mark.label}
+                    stroke="var(--text-muted)"
+                    strokeDasharray="3 3"
+                    label={{ value: mark.year, position: 'insideBottom', dy: 16, fontSize: 10, fill: 'var(--text-muted)' }}
+                  />
+                ))}
                 <Line type="monotone" dataKey="value" stroke="var(--accent)" strokeWidth={2} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
