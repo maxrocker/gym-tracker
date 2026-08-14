@@ -152,6 +152,7 @@ a {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 14px;
+  min-width: 0;
 }
 
 .card + .card {
@@ -197,12 +198,19 @@ label {
 
 input, select, textarea {
   width: 100%;
+  min-width: 0;
   padding: 12px 14px;
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--surface-2);
   color: var(--text);
   min-height: 46px;
+}
+
+input[type='date'] {
+  -webkit-min-logical-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 textarea {
